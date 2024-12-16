@@ -1,4 +1,4 @@
-Soccer Game
+#Soccer Game
 
 
 This project is a 2v2 Soccer Game developed as a part of the Computer Programming 1 Course. The game aims to simulate a soccer match with two players controlling goalkeepers and scoring goals.

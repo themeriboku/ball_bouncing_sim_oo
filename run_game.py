@@ -15,8 +15,8 @@ class SoccerGame:
 
         self.goalkeeper1_turtle = turtle.Turtle()
         self.goalkeeper2_turtle = turtle.Turtle()
-        self.goalkeeper1 = Paddle(width=10, height=100, color="red", my_turtle=self.goalkeeper1_turtle)
-        self.goalkeeper2 = Paddle(width=0, height=100, color="blue", my_turtle=self.goalkeeper2_turtle)
+        self.goalkeeper1 = Paddle(width=10, height=50, color="red", my_turtle=self.goalkeeper1_turtle)
+        self.goalkeeper2 = Paddle(width=10, height=50, color="blue", my_turtle=self.goalkeeper2_turtle)
         self.player1 = Player(-350, 0, color="blue")
         self.player2 = Player(350, 0, color="red")
         self.ball = SoccerBall(0, 0, id=1)

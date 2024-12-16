@@ -5,198 +5,187 @@ from Soccerball import SoccerBall
 from arrow import Arrow
 from player import Player
 
-screen = turtle.Screen()
-screen.title("Soccer Game")
-screen.bgcolor("green")
-screen.setup(width=1000, height=800)
-screen.tracer(0)
+class SoccerGame:
+    def __init__(self):
+        self.screen = turtle.Screen()
+        self.screen.title("Soccer Game")
+        self.screen.bgcolor("green")
+        self.screen.setup(width=1000, height=800)
+        self.screen.tracer(0)
 
-# Draw field
-def draw_field():
-    drawer = turtle.Turtle()
-    drawer.hideturtle()
-    drawer.color("white")
-    drawer.penup()
+        self.goalkeeper1_turtle = turtle.Turtle()
+        self.goalkeeper2_turtle = turtle.Turtle()
+        self.goalkeeper1 = Paddle(width=10, height=100, color="red", my_turtle=self.goalkeeper1_turtle)
+        self.goalkeeper2 = Paddle(width=0, height=100, color="blue", my_turtle=self.goalkeeper2_turtle)
+        self.player1 = Player(-350, 0, color="blue")
+        self.player2 = Player(350, 0, color="red")
+        self.ball = SoccerBall(0, 0, id=1)
+        self.arrow = Arrow()
+        self.scoreboard = turtle.Turtle()
+        self.score = {"player1": 0, "player2": 0}
+        self.current_player = self.player1
+        self.player_moving = False
+        self.turn_ended = False
+        self.arrow_active = False
 
-    # Main field
-    drawer.goto(-400, -300)
-    drawer.pendown()
-    for _ in range(2):
-        drawer.forward(800)
-        drawer.left(90)
-        drawer.forward(600)
-        drawer.left(90)
+        self.setup_field()
+        self.setup_goalkeepers()
+        self.setup_scoreboard()
+        self.bind_events()
+        self.start_game()
 
-    # Goal zones
-    # Left goal zone
-    drawer.penup()
-    drawer.goto(-500, -100)
-    drawer.pendown()
-    drawer.goto(-400, -100)
-    drawer.goto(-400, 100)
-    drawer.goto(-500, 100)
-    drawer.goto(-500, -100)
+    def setup_field(self):
+        drawer = turtle.Turtle()
+        drawer.hideturtle()
+        drawer.color("white")
+        drawer.penup()
 
-    # Right goal zone
-    drawer.penup()
-    drawer.goto(400, -100)
-    drawer.pendown()
-    drawer.goto(500, -100)
-    drawer.goto(500, 100)
-    drawer.goto(400, 100)
-    drawer.goto(400, -100)
+        # Main field
+        drawer.goto(-400, -300)
+        drawer.pendown()
+        for _ in range(2):
+            drawer.forward(800)
+            drawer.left(90)
+            drawer.forward(600)
+            drawer.left(90)
 
-    # Center line
-    drawer.penup()
-    drawer.goto(0, -300)
-    drawer.pendown()
-    drawer.goto(0, 300)
+        # Goal zones
+        # Left goal zone
+        drawer.penup()
+        drawer.goto(-500, -100)
+        drawer.pendown()
+        drawer.goto(-400, -100)
+        drawer.goto(-400, 100)
+        drawer.goto(-500, 100)
+        drawer.goto(-500, -100)
 
-draw_field()
+        # Right goal zone
+        drawer.penup()
+        drawer.goto(400, -100)
+        drawer.pendown()
+        drawer.goto(500, -100)
+        drawer.goto(500, 100)
+        drawer.goto(400, 100)
+        drawer.goto(400, -100)
 
-goalkeeper1_turtle = turtle.Turtle()
-goalkeeper1_turtle.shape("square")
-goalkeeper1_turtle.penup()
+        # Center line
+        drawer.penup()
+        drawer.goto(0, -300)
+        drawer.pendown()
+        drawer.goto(0, 300)
 
-goalkeeper2_turtle = turtle.Turtle()
-goalkeeper2_turtle.shape("square")
-goalkeeper2_turtle.penup()
+    def setup_goalkeepers(self):
+        self.goalkeeper1_turtle.shape("square")
+        self.goalkeeper1_turtle.penup()
+        self.goalkeeper2_turtle.shape("square")
+        self.goalkeeper2_turtle.penup()
 
-# Create two goalkeepers
-goalkeeper1 = Paddle(width=20, height=100, color="red", my_turtle=goalkeeper1_turtle)
-goalkeeper2 = Paddle(width=20, height=100, color="blue", my_turtle=goalkeeper2_turtle)
+        self.goalkeeper1.set_location([400, 0])  # Right side of the field
+        self.goalkeeper2.set_location([-400, 0])  # Left side of the field
 
-# Set their initial positions
-goalkeeper1.set_location([400, 0])  # Right side of the field
-goalkeeper2.set_location([-400, 0])  # Left side of the field
+        self.goalkeeper1.draw()
+        self.goalkeeper2.draw()
 
-# Draw the goalkeepers
-goalkeeper1.draw()
-goalkeeper2.draw()
+    def setup_scoreboard(self):
+        self.scoreboard.hideturtle()
+        self.scoreboard.color("white")
+        self.scoreboard.penup()
+        self.scoreboard.goto(0, 350)
+        self.update_score()
 
-# Create objects
-player1 = Player(-350, 0, color="blue")
-player2 = Player(350, 0, color="red")
-ball = SoccerBall(0, 0, id=1)
-ball.draw()
-arrow = Arrow()
+    def update_score(self):
+        self.scoreboard.clear()
+        self.scoreboard.write(
+            f"Player 1: {self.score['player1']}  Player 2: {self.score['player2']}",
+            align="center",
+            font=("Courier", 24, "normal")
+        )
 
-# Game state
-current_player = player1
-player_moving = False
-turn_ended = False
-arrow_active = False
-score = {"player1": 0, "player2": 0}
+    def check_goal(self):
+        if self.ball.x < -500:  # Left goal
+            self.score["player2"] += 1
+            self.reset_positions()
+            self.update_score()
+            self.turn_ended = True
 
-# Scoreboard
-scoreboard = turtle.Turtle()
-scoreboard.hideturtle()
-scoreboard.color("white")
-scoreboard.penup()
-scoreboard.goto(0, 350)
-scoreboard.write("Player 1: 0  Player 2: 0", align="center", font=("Courier", 24, "normal"))
+        if self.ball.x > 500:  # Right goal
+            self.score["player1"] += 1
+            self.reset_positions()
+            self.update_score()
+            self.turn_ended = True
 
-def update_score():
-    """Update the scoreboard display."""
-    scoreboard.clear()
-    scoreboard.write(
-        f"Player 1: {score['player1']}  Player 2: {score['player2']}",
-        align="center",
-        font=("Courier", 24, "normal"),
-    )
+        # Check for win condition
+        if self.score["player1"] == 5:
+            self.end_game("Player 1 Wins!")
+        elif self.score["player2"] == 5:
+            self.end_game("Player 2 Wins!")
 
-def check_goal():
-    """Check if the ball enters a goal zone and update the score."""
-    global turn_ended
-    if ball.x < -500:  # Left goal
-        score["player2"] += 1
-        reset_positions()
-        update_score()
-        turn_ended = True
+    def end_game(self, message):
+        self.scoreboard.goto(0, 0)
+        self.scoreboard.write(message, align="center", font=("Courier", 36, "normal"))
+        self.ball.vx = self.ball.vy = 0  # Stop ball movement
+        self.screen.update()
+        self.screen.bye()  # Close the turtle graphics window
 
-    if ball.x > 500:  # Right goal
-        score["player1"] += 1
-        reset_positions()
-        update_score()
-        turn_ended = True
+    def reset_positions(self):
+        self.player1.x, self.player1.y = -350, 0
+        self.player2.x, self.player2.y = 350, 0
+        self.ball.x, self.ball.y = 0, 0
+        self.ball.vx, self.ball.vy = 0, 0
+        self.player1.turtle.goto(self.player1.x, self.player1.y)
+        self.player2.turtle.goto(self.player2.x, self.player2.y)
+        self.ball.turtle.goto(self.ball.x, self.ball.y)
 
-    # Check for win condition
-    if score["player1"] == 5:
-        end_game("Player 1 Wins!")
-    elif score["player2"] == 5:
-        end_game("Player 2 Wins!")
+    def switch_turn(self):
+        self.current_player = self.player2 if self.current_player == self.player1 else self.player1
 
-def end_game(message):
-    """End the game and display the winner."""
-    scoreboard.goto(0, 0)
-    scoreboard.write(message, align="center", font=("Courier", 36, "normal"))
-    ball.vx = ball.vy = 0  # Stop ball movement
-    screen.update()
-    screen.bye()  # Close the turtle graphics window
+    def drag_player(self, x, y):
+        angle = self.current_player.get_angle_to_position(x, y)
+        distance = self.current_player.get_distance_to_position(x, y)
+        distance = min(distance, 50)  # Cap the distance at 50
+        self.arrow.update(self.current_player.x, self.current_player.y, angle, distance)
+        self.arrow_active = True
 
-def reset_positions():
-    """Reset player and ball positions."""
-    player1.x, player1.y = -350, 0
-    player2.x, player2.y = 350, 0
-    ball.x, ball.y = 0, 0
-    ball.vx, ball.vy = 0, 0
-    player1.turtle.goto(player1.x, player1.y)
-    player2.turtle.goto(player2.x, player2.y)
-    ball.turtle.goto(ball.x, ball.y)
+    def release_player(self, x, y):
+        if self.arrow_active:
+            angle = self.current_player.get_angle_to_position(x, y)
+            distance = self.current_player.get_distance_to_position(x, y)
+            speed = min(distance / 10, 15)  # Scale speed by drag distance with a cap
+            self.current_player.set_direction(angle, speed)
+            self.arrow.turtle.clear()
+            self.player_moving = True
+            self.arrow_active = False
 
-def switch_turn():
-    """Switch turn to the other player."""
-    global current_player
-    current_player = player2 if current_player == player1 else player1
+    def bind_events(self):
+        self.screen.listen()
+        self.screen.onscreenclick(self.release_player)
+        self.screen.ontimer(lambda: self.current_player.turtle.ondrag(self.drag_player), 100)
 
-# Dragging sets up arrow but does not move player
-def drag_player(x, y):
-    global arrow_active
-    angle = current_player.get_angle_to_position(x, y)
-    distance = current_player.get_distance_to_position(x, y)
-    distance = min(distance, 50)  # Cap the distance at 50
-    arrow.update(current_player.x, current_player.y, angle, distance)
-    arrow_active = True
+    def start_game(self):
+        self.ball.draw()
+        self.game_loop()
+        self.screen.mainloop()
 
-# Release triggers player movement
-def release_player(x, y):
-    global player_moving, arrow_active
-    if arrow_active:
-        angle = current_player.get_angle_to_position(x, y)
-        distance = current_player.get_distance_to_position(x, y)
-        speed = min(distance / 10, 15)  # Scale speed by drag distance with a cap
-        current_player.set_direction(angle, speed)
-        arrow.turtle.clear()
-        player_moving = True
-        arrow_active = False
+    def game_loop(self):
+        if self.player_moving:
+            self.current_player.move()
+            if not self.current_player.is_moving():
+                self.player_moving = False
+                self.turn_ended = True  # Indicate that the player's turn has ended
 
-# Mouse bindings
-screen.listen()
-screen.onscreenclick(release_player)
-screen.ontimer(lambda: current_player.turtle.ondrag(drag_player), 100)
+        if self.ball.is_moving():
+            self.ball.move()  # The ball will move and update its position automatically
+            self.ball.check_collision(self.player1)
+            self.ball.check_collision(self.player2)
+            self.check_goal()
 
-# Main game loop
-def game_loop():
-    global player_moving, turn_ended
+        if self.turn_ended:
+            self.switch_turn()
+            self.turn_ended = False
 
-    if player_moving:
-        current_player.move()
-        if not current_player.is_moving():
-            player_moving = False
-            turn_ended = True  # Indicate that the player's turn has ended
+        self.screen.update()
+        self.screen.ontimer(self.game_loop, 20)
 
-    if ball.is_moving():
-        ball.move()  # The ball will move and update its position automatically
-        ball.check_collision(player1)
-        ball.check_collision(player2)
-        check_goal()
-
-    if turn_ended:
-        switch_turn()
-        turn_ended = False
-
-    screen.update()
-    screen.ontimer(game_loop, 20)
-
-game_loop()
-screen.mainloop()
+# Start the game
+if __name__ == "__main__":
+    game = SoccerGame()

@@ -13,6 +13,7 @@ class Player:
         self.turtle.color(self.color)
         self.turtle.penup()
         self.turtle.goto(self.x, self.y)
+        self.mass = 100  
 
     def set_direction(self, angle, speed):
         self.angle = angle
@@ -34,3 +35,22 @@ class Player:
 
     def get_distance_to_position(self, x, y):
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
+    
+    def check_collision(self, other_player):
+        # Calculate distance between the two players
+        distance = math.sqrt((self.x - other_player.x)**2 + (self.y - other_player.y)**2)
+        
+        if distance < self.radius + other_player.radius:
+            # Simple elastic collision response
+            angle = math.atan2(self.y - other_player.y, self.x - other_player.x)
+            self.vx, self.vy = -math.cos(angle) * self.speed, -math.sin(angle) * self.speed
+            other_player.vx, other_player.vy = math.cos(angle) * other_player.speed, math.sin(angle) * other_player.speed
+
+            # Adjust positions to avoid overlap
+            overlap = self.radius + other_player.radius - distance
+            self.x += math.cos(angle) * overlap / 2
+            self.y += math.sin(angle) * overlap / 2
+            other_player.x -= math.cos(angle) * overlap / 2
+            other_player.y -= math.sin(angle) * overlap / 2
+            self.turtle.goto(self.x, self.y)
+            other_player.turtle.goto(other_player.x, other_player.y)

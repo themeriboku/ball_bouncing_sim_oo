@@ -36,7 +36,7 @@ class BouncingSimulator:
         self.screen = turtle.Screen()
 
     # updates priority queue with all new events for a_ball
-    def __predict(self, a_ball):
+    __predict(self, a_ball):
         if a_ball is None:
             return
 
@@ -130,7 +130,7 @@ class BouncingSimulator:
             self.__predict(ball_b)
 
             # regularly update the prediction for the paddle as its position may always be changing due to keyboard events
-            self.__paddle_predict()
+            self.__paddle_predict()def 
 
 
         # hold the window; close it by clicking the window close 'x' mark

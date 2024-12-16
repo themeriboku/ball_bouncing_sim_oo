@@ -24,12 +24,20 @@ class SoccerBall(Ball):
         self.vy *= 0.98
 
     def check_collision(self, player):
-        distance = self.distance(player)
-        if distance < 20:  # Assuming both ball and player are of radius ~10
-            angle = player.get_angle_to_position(self.x, self.y)
-            radian = math.radians(angle)
-            self.vx = math.cos(radian) * player.speed
-            self.vy = math.sin(radian) * player.speed
+        # Calculate distance between the ball and the player
+        distance = math.sqrt((self.x - player.x)**2 + (self.y - player.y)**2)
+        
+        if distance < self.radius + player.radius:
+            # Simple elastic collision response
+            angle = math.atan2(self.y - player.y, self.x - player.x)
+            self.vx, self.vy = math.cos(angle) * self.speed, math.sin(angle) * self.speed
+
+            # Adjust positions to avoid overlap
+            overlap = self.radius + player.radius - distance
+            self.x += math.cos(angle) * overlap / 2
+            self.y += math.sin(angle) * overlap / 2
+            self.turtle.goto(self.x, self.y)
+
     
     def is_moving(self):
         # A simple check to see if the ball has any velocity

@@ -68,3 +68,34 @@ Make sure you have the following installed on your system:
 # UML Diagram
 ![alt text](image.png)
 
+### Class Descriptions
+- **SoccerGame:** Manages the game state, handles user input, and updates the game logic.
+- **Paddle:** Represents the goalkeepers, which can be controlled to block the ball.
+- **SoccerBall:** Represents the ball in the game, including its movement and interactions.
+- **Arrow:** Visual aid for setting the direction and speed of player movement.
+- **Player:** Represents the players on the field, including their position and movement logic.
+
+### Class Interactions
+- **SoccerGame** interacts with **Paddle**, **Player**, **SoccerBall**, and **Arrow** to manage the overall game state and render updates.
+- **Player** objects can move and interact with the **SoccerBall**.
+- **Paddle** objects act as goalkeepers and can block the **SoccerBall**.
+- **Arrow** is used for visualizing the direction and speed of player movement.
+
+### Extending the Baseline Code
+The baseline code was extended by:
+- Adding classes for **Paddle**, **Player**, **SoccerBall**, and **Arrow** to manage specific game elements.
+- Implementing collision detection and handling between the **SoccerBall** and other game objects.
+- Enhancing user interactivity by allowing drag-and-release functionality for players.
+
+### Testing and Known Issues
+The project was tested through various game scenarios to ensure correct behavior. However, the following issues are known:
+
+#### Player and SoccerBall Collision
+- **Issue:** The ball and player do not always detect collisions accurately, leading to unrealistic interactions.
+
+#### Player Movement Outside Field Boundaries
+- **Issue:** Players can move outside the designated field boundaries.
+
+#### Paddle Collision
+- **Issue:** The paddles (goalkeepers) do not always block the ball as expected.
+
